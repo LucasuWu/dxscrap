@@ -8,7 +8,7 @@ import logging
 # Configurations
 DEXSCREENER_API_URL = "https://api.dexscreener.com/token-profiles/latest/v1"
 TELEGRAM_BOT_TOKEN = "7430294917:AAG4L-quEtfjxg5dHBUv_FMiAJD3X_syQzk"
-TELEGRAM_CHAT_ID = "-1002313694418"  # Remplacez avec l'ID réel du channel où se trouvent les topics
+TELEGRAM_CHAT_ID = "-1001234567890"  # Remplacez avec l'ID réel du channel où se trouvent les topics
 CHECK_INTERVAL = 10  # Vérification toutes les 10 secondes
 DATA_FILE = "previous_data.json"  # Nom du fichier pour stocker l'état
 
@@ -28,6 +28,7 @@ TOPIC_IDS = {
     "sonic": 27,
     "bsc": 26,
     "others": 38,
+    "hyperliquid": 99,
 }
 
 # Charger les données précédentes depuis le fichier JSON
@@ -64,22 +65,20 @@ async def check_updates():
         response.raise_for_status()
         data = response.json()
 
-        # Identifier si la réponse est une liste ou un objet contenant une liste
         if isinstance(data, list):
-            tokens = data  # La réponse est directement une liste
+            tokens = data
         elif isinstance(data, dict) and "tokens" in data:
-            tokens = data["tokens"]  # La liste est sous la clé "tokens"
+            tokens = data["tokens"]
         else:
             logging.error("Format de réponse inconnu :", data)
             return
 
-        for token_data in tokens:  # Parcourir chaque token
+        for token_data in tokens:
             token_id = token_data.get("tokenAddress")
 
-            # Préparer les données actuelles
             current_data = {
                 "url": token_data.get("url"),
-                "chainId": token_data.get("chainId"),  # Utilisé pour déterminer le topic
+                "chainId": token_data.get("chainId"),
                 "tokenAddress": token_data.get("tokenAddress"),
                 "icon": token_data.get("icon"),
                 "description": token_data.get("description"),
@@ -89,15 +88,14 @@ async def check_updates():
                 ],
             }
 
-            # Vérifier si ce token a changé
             if previous_data.get(token_id) != current_data:
                 logging.info(f"Changement détecté pour le token {token_id}")
                 await send_telegram_message(current_data)
-                previous_data[token_id] = current_data  # Mettre à jour les données précédentes
+                previous_data[token_id] = current_data
             else:
                 logging.info(f"Aucun changement détecté pour le token {token_id}")
 
-        save_previous_data(previous_data)  # Sauvegarder toutes les données
+        save_previous_data(previous_data)
 
     except Exception as e:
         logging.error(f"Erreur lors de la vérification des mises à jour : {e}")
@@ -106,18 +104,16 @@ async def check_updates():
 async def send_telegram_message(data):
     bot = Bot(token=TELEGRAM_BOT_TOKEN)
     message = (
-        f"{escape_markdown_v2(data['url'])}\n"
-        f"🌐 Blockchain: {escape_markdown_v2(data['chainId'])}\n"
-        f"📜 Contract: {escape_markdown_v2(data['tokenAddress'])}\n"
-        f"📝 Description: {escape_markdown_v2(data['description'])}\n\n\n"
-        f"🔗 Liens:\n" + "\n".join(escape_markdown_v2(link) for link in data["links"])
+        f"{escape_markdown_v2(data['chainId'].upper())}\n"
+        f"[Contract]({data['url']})\n\n"
+        f"{escape_markdown_v2(data['description'])}\n\n\n"
+        f"{'\n'.join(escape_markdown_v2(link) for link in data['links'])}"
     )
     
-    # Trouver le bon topic en fonction de la blockchain
     topic_id = TOPIC_IDS.get(data['chainId'].lower(), TOPIC_IDS.get("others"))
     if topic_id:
         try:
-            if data["icon"]:  # Check if icon exists before sending
+            if data["icon"]:  
                 await bot.send_photo(chat_id=TELEGRAM_CHAT_ID, message_thread_id=topic_id, photo=data["icon"], caption=message, parse_mode="MarkdownV2")
             else:
                 await bot.send_message(chat_id=TELEGRAM_CHAT_ID, message_thread_id=topic_id, text=message, parse_mode="MarkdownV2")
