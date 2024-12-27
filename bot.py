@@ -109,7 +109,7 @@ async def send_telegram_message(data):
         f"{escape_markdown_v2(data['chainId'].upper())}\n"
         f"[Contract]({data['url']})\n\n"
         f"{escape_markdown_v2(data['description'])}" + "\n\n\n"
-        f"{chr(10).join(escape_markdown_v2(link) for link in data['links'])}"  # Use chr(10) for newline to avoid backslash issue
+        f"{chr(10).join(escape_markdown_v2(link) for link in data['links'])}"
     )
     
     topic_id = TOPIC_IDS.get(data['chainId'].lower(), TOPIC_IDS.get("others"))
