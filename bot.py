@@ -108,6 +108,7 @@ async def send_telegram_message(data):
     message = (
         f"{escape_markdown_v2(data['chainId'].upper())}\n"
         f"[Contract]({data['url']})\n\n"
+        #caca
         f"{escape_markdown_v2(data['description'])}"
         f"{chr(10).join(escape_markdown_v2(link) for link in data['links'])}"
     )
