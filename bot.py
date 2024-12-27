@@ -36,15 +36,17 @@ def load_previous_data():
     try:
         with open(DATA_FILE, "r") as file:
             return json.load(file)
-    except FileNotFoundError:
-        return {}  # Retourne un dictionnaire vide si le fichier n'existe pas
-    except json.JSONDecodeError:
-        return {}  # Retourne un dictionnaire vide si le fichier est corrompu
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        logging.info(f"Chargement des données échoué : {e}")
+        return {}  # Retourne un dictionnaire vide si le fichier n'existe pas ou est corrompu
 
 # Sauvegarder les données actuelles dans un fichier JSON
 def save_previous_data(data):
-    with open(DATA_FILE, "w") as file:
-        json.dump(data, file)
+    try:
+        with open(DATA_FILE, "w") as file:
+            json.dump(data, file)
+    except IOError as e:
+        logging.error(f"Erreur lors de la sauvegarde des données : {e}")
 
 # Échapper les caractères réservés de MarkdownV2
 def escape_markdown_v2(text):
@@ -93,12 +95,14 @@ async def check_updates():
                 await send_telegram_message(current_data)
                 previous_data[token_id] = current_data
             else:
-                logging.info(f"Aucun changement détecté pour le token {token_id}")
+                logging.debug(f"Aucun changement détecté pour le token {token_id}")
 
         save_previous_data(previous_data)
 
+    except requests.RequestException as e:
+        logging.error(f"Erreur de requête HTTP : {e}")
     except Exception as e:
-        logging.error(f"Erreur lors de la vérification des mises à jour : {e}")
+        logging.error(f"Erreur inattendue lors de la vérification des mises à jour : {e}")
 
 # Fonction pour envoyer un message Telegram
 async def send_telegram_message(data):
@@ -107,7 +111,7 @@ async def send_telegram_message(data):
         f"{escape_markdown_v2(data['chainId'].upper())}\n"
         f"[Contract]({data['url']})\n\n"
         f"{escape_markdown_v2(data['description'])}\n\n\n"
-        f"{'\n'.join(escape_markdown_v2(link) for link in data['links'])}"
+        f"{chr(10).join(escape_markdown_v2(link) for link in data['links'])}"  # Use chr(10) for newline to avoid backslash issue
     )
     
     topic_id = TOPIC_IDS.get(data['chainId'].lower(), TOPIC_IDS.get("others"))
@@ -118,7 +122,7 @@ async def send_telegram_message(data):
             else:
                 await bot.send_message(chat_id=TELEGRAM_CHAT_ID, message_thread_id=topic_id, text=message, parse_mode="MarkdownV2")
         except Exception as e:
-            logging.error(f"Error sending message to topic {topic_id}: {e}")
+            logging.error(f"Erreur lors de l'envoi du message au topic {topic_id}: {e}")
     else:
         logging.warning(f"Pas de topic correspondant pour la blockchain {data['chainId']}")
 
