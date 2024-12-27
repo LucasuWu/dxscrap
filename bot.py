@@ -102,23 +102,19 @@ async def check_updates(previous_data):
         logging.error(f"Erreur inattendue lors de la vérification des mises à jour : {e}")
         return previous_data
 
-# Fonction pour envoyer un message Telegram
+# Fonction pour envoyer un message Telegram (simplifié)
 async def send_telegram_message(data):
     bot = Bot(token=TELEGRAM_BOT_TOKEN)
-    message = (
-        f"{escape_markdown_v2(data['chainId'].upper())}\n"
-        f"Contract: {data['url']}\n\n"  # Modification ici pour envoyer l'URL complète non cliquable
-        f"{escape_markdown_v2(data['description'])}\n\n\n"
-        f"{chr(10).join(escape_markdown_v2(link) for link in data['links'])}"
-    )
+    # Message simplifié sans le formatage MarkdownV2
+    message = f"Contract: {data['url']}\nChainId: {data['chainId']}"
     
     topic_id = TOPIC_IDS.get(data['chainId'].lower(), TOPIC_IDS.get("others"))
     if topic_id:
         try:
             if data["icon"]:  
-                await bot.send_photo(chat_id=TELEGRAM_CHAT_ID, message_thread_id=topic_id, photo=data["icon"], caption=message, parse_mode="MarkdownV2")
+                await bot.send_photo(chat_id=TELEGRAM_CHAT_ID, message_thread_id=topic_id, photo=data["icon"], caption=message, parse_mode=None)
             else:
-                await bot.send_message(chat_id=TELEGRAM_CHAT_ID, message_thread_id=topic_id, text=message, parse_mode="MarkdownV2")
+                await bot.send_message(chat_id=TELEGRAM_CHAT_ID, message_thread_id=topic_id, text=message, parse_mode=None)
         except Exception as e:
             logging.error(f"Erreur lors de l'envoi du message au topic {topic_id}: {e}")
     else:
