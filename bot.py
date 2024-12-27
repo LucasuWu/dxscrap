@@ -8,7 +8,7 @@ import logging
 # Configurations
 DEXSCREENER_API_URL = "https://api.dexscreener.com/token-profiles/latest/v1"
 TELEGRAM_BOT_TOKEN = "7430294917:AAG4L-quEtfjxg5dHBUv_FMiAJD3X_syQzk"
-TELEGRAM_CHAT_ID = "-1001234567890"  # Remplacez avec l'ID réel du channel où se trouvent les topics
+TELEGRAM_CHAT_ID = "-1002313694418"  # Remplacez avec l'ID réel du channel où se trouvent les topics
 CHECK_INTERVAL = 10  # Vérification toutes les 10 secondes
 DATA_FILE = "previous_data.json"  # Nom du fichier pour stocker l'état
 
