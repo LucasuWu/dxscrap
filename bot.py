@@ -48,13 +48,6 @@ def save_previous_data(data):
     except IOError as e:
         logging.error(f"Erreur lors de la sauvegarde des données : {e}")
 
-# Échapper les caractères réservés de MarkdownV2
-def escape_markdown_v2(text):
-    if not text:
-        return "N/A"
-    escape_chars = r"_*[]()~`>#+-=|{}.!"
-    return re.sub(rf"([{re.escape(escape_chars)}])", r"\\\1", text)
-
 # Fonction pour vérifier les mises à jour
 async def check_updates(previous_data):
     try:
@@ -102,19 +95,16 @@ async def check_updates(previous_data):
         logging.error(f"Erreur inattendue lors de la vérification des mises à jour : {e}")
         return previous_data
 
-# Fonction pour envoyer un message Telegram (simplifié)
+# Fonction pour envoyer un message Telegram (simplifiée pour envoyer juste les liens)
 async def send_telegram_message(data):
     bot = Bot(token=TELEGRAM_BOT_TOKEN)
-    # Message simplifié sans le formatage MarkdownV2
-    message = f"Contract: {data['url']}\nChainId: {data['chainId']}"
+    # Message simplifié avec juste l'URL du contrat et les liens
+    message = f"Contract: {data['url']}\n\n" + "\n".join(data['links'])
     
     topic_id = TOPIC_IDS.get(data['chainId'].lower(), TOPIC_IDS.get("others"))
     if topic_id:
         try:
-            if data["icon"]:  
-                await bot.send_photo(chat_id=TELEGRAM_CHAT_ID, message_thread_id=topic_id, photo=data["icon"], caption=message, parse_mode=None)
-            else:
-                await bot.send_message(chat_id=TELEGRAM_CHAT_ID, message_thread_id=topic_id, text=message, parse_mode=None)
+            await bot.send_message(chat_id=TELEGRAM_CHAT_ID, message_thread_id=topic_id, text=message, parse_mode=None)
         except Exception as e:
             logging.error(f"Erreur lors de l'envoi du message au topic {topic_id}: {e}")
     else:
