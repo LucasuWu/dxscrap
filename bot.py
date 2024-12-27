@@ -1,3 +1,7 @@
+
+Voici le code complet avec la modification pour envoyer l'URL du contrat en texte brut :
+
+python
 import requests
 import asyncio
 import json
@@ -107,9 +111,8 @@ async def send_telegram_message(data):
     bot = Bot(token=TELEGRAM_BOT_TOKEN)
     message = (
         f"{escape_markdown_v2(data['chainId'].upper())}\n"
-        f"[Contract]({data['url']})\n\n"
-        #caca
-        f"{escape_markdown_v2(data['description'])}"
+        f"Contract: {data['url']}\n\n"  # Modification ici pour envoyer l'URL complète non cliquable
+        f"{escape_markdown_v2(data['description'])}\n\n\n"
         f"{chr(10).join(escape_markdown_v2(link) for link in data['links'])}"
     )
     
