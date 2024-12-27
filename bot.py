@@ -1,7 +1,3 @@
-
-Voici le code complet avec la modification pour envoyer l'URL du contrat en texte brut :
-
-python
 import requests
 import asyncio
 import json
