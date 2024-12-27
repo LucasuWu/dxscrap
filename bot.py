@@ -55,13 +55,8 @@ def escape_markdown_v2(text):
     escape_chars = r"_*[]()~`>#+-=|{}.!"
     return re.sub(rf"([{re.escape(escape_chars)}])", r"\\\1", text)
 
-# Initialisation
-previous_data = load_previous_data()
-
 # Fonction pour vérifier les mises à jour
-async def check_updates():
-    global previous_data
-
+async def check_updates(previous_data):
     try:
         response = requests.get(DEXSCREENER_API_URL)
         response.raise_for_status()
@@ -73,7 +68,7 @@ async def check_updates():
             tokens = data["tokens"]
         else:
             logging.error("Format de réponse inconnu :", data)
-            return
+            return previous_data
 
         for token_data in tokens:
             token_id = token_data.get("tokenAddress")
@@ -98,11 +93,14 @@ async def check_updates():
                 logging.debug(f"Aucun changement détecté pour le token {token_id}")
 
         save_previous_data(previous_data)
+        return previous_data
 
     except requests.RequestException as e:
         logging.error(f"Erreur de requête HTTP : {e}")
+        return previous_data
     except Exception as e:
         logging.error(f"Erreur inattendue lors de la vérification des mises à jour : {e}")
+        return previous_data
 
 # Fonction pour envoyer un message Telegram
 async def send_telegram_message(data):
@@ -128,8 +126,9 @@ async def send_telegram_message(data):
 
 # Boucle principale
 async def main():
+    previous_data = load_previous_data()
     while True:
-        await check_updates()
+        previous_data = await check_updates(previous_data)
         await asyncio.sleep(CHECK_INTERVAL)
 
 if __name__ == "__main__":
