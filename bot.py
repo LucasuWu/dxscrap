@@ -29,6 +29,12 @@ TOPIC_IDS = {
     "bsc": 26,
     "others": 38,
     "hyperliquid": 99,
+    "xrpl": 31020,
+    "ink": 31022,
+    "sonium": 31014,
+    "berachain": 31016,
+    "abstract": 31017,
+    "monad": 31015,
 }
 
 # Charger les données précédentes depuis le fichier JSON
