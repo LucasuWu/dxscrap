@@ -31,7 +31,7 @@ TOPIC_IDS = {
     "hyperliquid": 99,
     "xrpl": 31020,
     "ink": 31022,
-    "sonium": 31014,
+    "soneium": 31014,
     "berachain": 31016,
     "abstract": 31017,
     "monad": 31015,
