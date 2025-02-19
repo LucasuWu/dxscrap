@@ -35,6 +35,7 @@ TOPIC_IDS = {
     "berachain": 31016,
     "abstract": 31017,
     "monad": 31015,
+    "hyperevm": 65011,
 }
 
 # Charger les données précédentes depuis le fichier JSON
